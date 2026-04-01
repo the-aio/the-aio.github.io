@@ -1,7 +1,91 @@
 baseURL = "https://the-aio.github.io/"
-locale = "ko-kr"
+defaultContentLanguage = "en"
 title = "the aio"
 theme = "blowfish"
 
 [markup.goldmark.renderer]
 unsafe = true
+
+[params]
+  colorScheme = "blowfish"
+  defaultAppearance = "light"
+  autoSwitchAppearance = true
+  Logo = "logo.png"
+  disableTextInHeader = true
+  
+[params.header]
+  layout = "basic"
+
+[params.footer]
+  showThemeAttribution = false
+  showCopyright = true
+
+[[languages.en.menu.main]]
+  name = "About Us"
+  identifier = "about"
+  url = "/company-overview"
+  weight = 10
+
+[[languages.en.menu.main]]
+  name = "Company Overview"
+  pageRef = "/company-overview"
+  parent = "about"
+  weight = 1
+
+[[languages.en.menu.main]]
+  name = "History"
+  pageRef = "/history"
+  parent = "about"
+  weight = 2
+
+[[languages.en.menu.main]]
+  name = "Leadership"
+  pageRef = "/leadership"
+  parent = "about"
+  weight = 3
+
+[[languages.en.menu.main]]
+  name = "Products"
+  identifier = "products"
+  url = "/emmc"
+  weight = 20
+
+[[languages.en.menu.main]]
+  name = "eMMC"
+  pageRef = "/emmc"
+  parent = "products"
+  weight = 1
+
+[[languages.en.menu.main]]
+  name = "SD Card"
+  pageRef = "/sd-card"
+  parent = "products"
+  weight = 2
+
+[[languages.en.menu.main]]
+  name = "UFD"
+  pageRef = "/ufd"
+  parent = "products"
+  weight = 3
+
+[[languages.en.menu.main]]
+  name = "Support"
+  identifier = "support"
+  pageRef = "/support"
+  weight = 30
+
+[[languages.en.menu.main]]
+  name = "SD Reader"
+  url = "/sd-reader/"
+  parent = "support"
+  weight = 1
+
+[[languages.en.menu.main]]
+  name = "Newsroom"
+  pageRef = "/newsroom"
+  weight = 40
+
+[[languages.en.menu.main]]
+  name = "Contact"
+  pageRef = "/contact"
+  weight = 50

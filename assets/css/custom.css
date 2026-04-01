@@ -1,0 +1,58 @@
+/* assets/css/custom.css */
+/* Hover Dropdown functionality for Top Navigation */
+@media (min-width: 1024px) {
+  .group:hover .group-hover\:block {
+    display: block !important;
+  }
+}
+
+/* Brand Styling: Red 'a' emphasis */
+.brand-name-a {
+  @apply text-red-600 font-bold;
+}
+
+/* Highlight the 'a' in 'the aio' logo text if logo is not loaded */
+.navbar-brand .logo-text span:nth-child(2) {
+  color: #e11d48; /* Red from the logo */
+}
+
+/* Global accent overrides to match corporate red where appropriate */
+:root {
+  --color-primary-600: 225, 29, 72; /* matches logo red #e11d48 */
+}
+
+/* Stable CTA styling for Support > SD Reader card */
+.sd-reader-cta,
+.sd-reader-cta:visited {
+  background-color: #111827 !important;
+  color: #ffffff !important;
+  border: 1px solid #111827 !important;
+  border-radius: 0.75rem !important;
+  text-decoration: none !important;
+}
+
+.sd-reader-cta:hover,
+.sd-reader-cta:focus,
+.sd-reader-cta:active {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+  border-radius: 0.75rem !important;
+  text-decoration: none !important;
+}
+
+.dark .sd-reader-cta,
+.dark .sd-reader-cta:visited {
+  background-color: #f5f5f5 !important;
+  color: #111827 !important;
+  border-color: #d4d4d8 !important;
+}
+
+.dark .sd-reader-cta:hover,
+.dark .sd-reader-cta:focus,
+.dark .sd-reader-cta:active {
+  background-color: #e5e7eb !important;
+  color: #111827 !important;
+  border-color: #9ca3af !important;
+  border-radius: 0.75rem !important;
+}

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIO SD Card Infomation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        color: #333;
+        font-size: 18px;
+        display: flex;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      .container {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        width: 600px;
+        max-width: 100%;
+      }
+      textarea {
+        width: calc(100% - 22px);
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      .button-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      button {
+        padding: 12px 20px;
+        margin: 0 6px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 18px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+      input[type="text"] {
+        width: calc(50% - 22px);
+        padding: 10px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      #status {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 4px;
+        border: 1px solid #ced4da;
+        font-weight: bold;
+        text-align: center;
+        font-size: 18px;
+      }
+      .status-disconnected {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+      }
+      .status-connected {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+      }
+      .status-error {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffeeba;
+      }
+      .command-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+      }
+      .command-section h3 {
+        margin-top: 0;
+      }
+      .output-area {
+        margin-top: 10px;
+        margin-bottom: 20px;
+      }
+      hr {
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      #device_info_table {
+        margin-top: 15px;
+        border-collapse: collapse;
+        width: 100%;
+      }
+      #device_info_table th,
+      #device_info_table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+        font-size: 18px;
+      }
+      #device_info_table th {
+        background-color: #f2f2f2;
+        font-size: 17px;
+      }
+      #aio_info_table {
+        margin-top: 15px;
+        border-collapse: collapse;
+        width: 100%;
+      }
+      #aio_info_table th,
+      #aio_info_table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+        font-size: 18px;
+      }
+      #aio_info_table th {
+        background-color: #f2f2f2;
+        font-size: 17px;
+      }
+      .table-container {
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      .table-container h3 {
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+      .table-container > button {
+        margin-bottom: 15px;
+      }
+      .logo-container {
+          margin-top: 3vh;
+          display: flex;
+          justify-content: center;
+          width: 100%;
+      }
+      .logo-container img {
+          width: 20vh;
+          height: auto;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .modal-content {
+        width: min(420px, 100%);
+        background: #fff;
+        border-radius: 10px;
+        padding: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      }
+      .modal-content h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+      }
+      .modal-content p {
+        margin-top: 0;
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+    </style>
+  </head>
+
+<body>
+  <div class="container">
+    <p id="status" class="status-disconnected">AIO SD READER 연결 안됨</p>
+    <div class="button-container">
+      <button id="connect_btn">AIO SD READER 연결</button>
+      <button id="disconnect_btn" style="display:none;">연결 끊기</button>
+    </div>
+    <hr>
+
+    <div class="table-container">
+      <div class="button-container">
+        <button id="cmd_query_aio_btn" disabled>Refresh</button>
+      </div>
+      <h3>AIO SD Card 정보</h3>
+      <div id="aio_info_container">
+        <p id="aio_info_placeholder">AIO SD Card 정보를 가져오려면 "Refresh" 버튼을 클릭하거나, 장치 연결 시 자동으로 조회됩니다.</p>
+        <table id="aio_info_table" style="display:none;">
+          <tbody>
+            </tbody>
+        </table>
+      </div>
+    </div>
+    <hr>
+
+    <div class="table-container">
+      <div class="button-container">
+        <button id="cmd_query_device_btn" disabled>USB Device</button>
+      </div>
+      <h3>장치 정보</h3>
+      <div id="device_info_container">
+        <p id="device_info_placeholder">USB 장치 정보를 가져오려면 "USB Device" 버튼을 클릭하세요.</p>
+        <table id="device_info_table" style="display:none;">
+          <tbody>
+            </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+    <div class="logo-container">
+        <img alt="AIO Logo"
+            src="data:image/png;base64,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"
+            style="width:160px;height:auto;" />
+    </div>
+  </div>
+
+  <div id="sd_removed_modal" class="modal-overlay" hidden>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="sd_removed_modal_title">
+      <h3 id="sd_removed_modal_title">SD 카드 분리</h3>
+      <p>SD 카드가 분리되었습니다.</p>
+      <div class="modal-actions">
+        <button id="sd_removed_modal_close_btn" type="button">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var serial = {};
+
+    (function(serial) {
+      'use strict';
+
+      serial.Port = function(device) {
+        this.device_ = device;
+        this.packetSize_ = 64;
+        this.incomingDataBuffer_ = '';
+        this.textDecoder_ = new TextDecoder('utf-8');
+        this.inEndpointNumber_ = 0;
+        this.outEndpointNumber_ = 0;
+      };
+
+      serial.Port.prototype.connect = async function() {
+        try {
+          await this.device_.open();
+          if (this.device_.configuration === null) {
+            await this.device_.selectConfiguration(1);
+          }
+          await this.device_.claimInterface(0);
+
+          const iface = this.device_.configuration.interfaces[0].alternate;
+          const inEndpoint = iface.endpoints.find(ep => ep.direction === 'in');
+          const outEndpoint = iface.endpoints.find(ep => ep.direction === 'out');
+
+          if (!inEndpoint) throw new Error("IN 엔드포인트를 찾을 수 없습니다.");
+          this.inEndpointNumber_ = inEndpoint.endpointNumber;
+
+          if (!outEndpoint) throw new Error("OUT 엔드포인트를 찾을 수 없습니다.");
+          this.outEndpointNumber_ = outEndpoint.endpointNumber;
+
+          this.onConnect();
+          this._readLoop();
+        } catch (error) {
+          this.onError("연결 실패: " + error.message);
+          if (this.device_ && this.device_.opened) {
+            await this.device_.close().catch(e => console.warn("연결 실패 시 장치 닫기 오류:", e));
+          }
+          throw error;
+        }
+      };
+
+      serial.Port.prototype._readLoop = async function() {
+        if (!this.device_.opened) {
+          console.log("장치가 열려있지 않아 읽기 루프를 중단합니다.");
+          if (typeof this.onUnexpectedDisconnect === 'function') {
+             this.onUnexpectedDisconnect("Device closed or unavailable.");
+          }
+          return;
+        }
+        try {
+          const result = await this.device_.transferIn(this.inEndpointNumber_, this.packetSize_);
+
+          if (result.status === 'ok') {
+            this.incomingDataBuffer_ += this.textDecoder_.decode(result.data, { stream: true });
+            if (result.data.byteLength < this.packetSize_) {
+              const finalChunk = this.textDecoder_.decode();
+              if (finalChunk) {
+                  this.incomingDataBuffer_ += finalChunk;
+              }
+              if (this.incomingDataBuffer_.length > 0) {
+                this.onReceive(this.incomingDataBuffer_);
+              }
+              this.incomingDataBuffer_ = '';
+              this.textDecoder_ = new TextDecoder('utf-8');
+            }
+          } else if (result.status === 'stall') {
+            console.warn("IN 엔드포인트 STALL. 자동 클리어 시도.");
+            try {
+                await this.device_.clearHalt('in', this.inEndpointNumber_);
+            } catch (clearHaltError) {
+                console.error("clearHalt 실패:", clearHaltError);
+                if (typeof this.onUnexpectedDisconnect === 'function') {
+                    this.onUnexpectedDisconnect("Failed to clear halt: " + clearHaltError.message);
+                }
+                return;
+            }
+          } else {
+            console.warn("TransferIn 문제, 상태: ", result.status);
+             if (typeof this.onUnexpectedDisconnect === 'function') {
+                this.onUnexpectedDisconnect("TransferIn status: " + result.status);
+            }
+            return;
+          }
+        } catch (error) {
+            const errorMsgLower = error.message.toLowerCase();
+            if (errorMsgLower.includes("disconnected") ||
+                errorMsgLower.includes("babble") ||
+                errorMsgLower.includes("device unavailable") ||
+                errorMsgLower.includes("no device selected") ||
+                errorMsgLower.includes("clearhalt")) {
+                console.warn("읽기 루프 중단 (예상된 연결 해제 또는 심각한 오류):", error.message);
+                if (typeof this.onUnexpectedDisconnect === 'function') {
+                    this.onUnexpectedDisconnect(error.message);
+                }
+                return;
+            }
+            console.error("TransferIn 알 수 없는 오류:", error);
+            this.onError("수신 오류: " + error.message);
+            if (this.device_ && !this.device_.opened && typeof this.onUnexpectedDisconnect === 'function') {
+                this.onUnexpectedDisconnect("Unknown read loop error, device closed.");
+            }
+            return;
+        }
+
+        if (this.device_.opened) {
+            requestAnimationFrame(() => this._readLoop());
+        }
+      };
+
+      serial.Port.prototype.send = async function(data) {
+        if (!this.device_.opened) {
+          this.onError("데이터 전송 실패: 장치가 연결되지 않았습니다.");
+          return false;
+        }
+        try {
+          let encodedData = new TextEncoder('utf-8').encode(data);
+          await this.device_.transferOut(this.outEndpointNumber_, encodedData);
+          console.log("데이터 전송 성공:", data);
+          return true;
+        } catch (error) {
+          console.error("TransferOut 오류:", error);
+          this.onError("전송 오류: " + error.message);
+          if (this.device_ && !this.device_.opened && typeof this.onUnexpectedDisconnect === 'function') {
+            this.onUnexpectedDisconnect("Send error, device closed: " + error.message);
+          }
+          return false;
+        }
+      };
+
+      serial.Port.prototype.disconnect = async function() {
+        if (this.device_ && this.device_.opened) {
+          try {
+            await this.device_.close();
+            console.log("장치 닫힘.");
+          } catch (error) {
+            console.warn("연결 해제 중 오류 (무시 가능):", error.message);
+          }
+        }
+        this.onDisconnect();
+      };
+
+      serial.Port.prototype.onConnect = function() {};
+      serial.Port.prototype.onDisconnect = function() {};
+      serial.Port.prototype.onReceive = function(data) {};
+      serial.Port.prototype.onError = function(error) { console.error("Serial Port Error:", error); };
+      serial.Port.prototype.onUnexpectedDisconnect = function(errorMessage) {};
+
+
+      serial.getPorts = function() {
+        return navigator.usb.getDevices().then(devices => {
+          return devices.map(device => new serial.Port(device));
+        });
+      };
+
+      serial.requestPort = function() {
+        const filters = [
+          { 'vendorId': 0x0A10, 'productId': 0x0002 },
+        ];
+        return navigator.usb.requestDevice({ 'filters': filters }).then(
+          device => new serial.Port(device)
+        );
+      };
+
+    })(serial);
+
+    let port;
+    let sdStatePollTimer = null;
+    let sdStateQueryInFlight = false;
+    let aioQueryInFlight = false;
+    let aioQueryOrigin = null;
+    let pendingAutoAIOQuery = false;
+    let manualRefreshPending = false;
+    let lastKnownCardPresent = null;
+
+    const statusDisplay = document.getElementById('status');
+    const connectButton = document.getElementById('connect_btn');
+    const disconnectButton = document.getElementById('disconnect_btn');
+
+    const cmdQueryDeviceButton = document.getElementById('cmd_query_device_btn');
+    const cmdQueryAIOButton = document.getElementById('cmd_query_aio_btn');
+
+    const deviceInfoTable = document.getElementById('device_info_table');
+    const deviceInfoTableBody = deviceInfoTable.querySelector('tbody');
+    const deviceInfoPlaceholder = document.getElementById('device_info_placeholder');
+
+    const aioInfoTable = document.getElementById('aio_info_table');
+    const aioInfoTableBody = aioInfoTable.querySelector('tbody');
+    const aioInfoPlaceholder = document.getElementById('aio_info_placeholder');
+    const sdRemovedModal = document.getElementById('sd_removed_modal');
+    const sdRemovedModalCloseButton = document.getElementById('sd_removed_modal_close_btn');
+
+    const commandButtons = [cmdQueryDeviceButton, cmdQueryAIOButton];
+    const defaultAIOPlaceholderText = 'AIO SD Card 정보를 가져오려면 "Refresh" 버튼을 클릭하거나, 장치 연결 시 자동으로 조회됩니다.';
+    const defaultDevicePlaceholderText = 'USB 장치 정보를 가져오려면 "USB Device" 버튼을 클릭하세요.';
+    const errorMessagesByName = {
+      message_too_large: '장치 버퍼가 처리할 수 있는 크기를 초과한 요청입니다.',
+      json_parse_failed: '장치가 요청 JSON을 해석하지 못했습니다.',
+      missing_command: '요청에 command 필드가 없습니다.',
+      unknown_command: '장치가 알 수 없는 명령을 받았습니다.',
+      response_encode_failed: '장치가 응답 데이터를 만드는 데 실패했습니다.',
+      invalid_arg: '장치 내부 파라미터 오류가 발생했습니다.',
+      disk_status_read_failed: 'SD 카드 상태를 읽지 못했습니다.',
+      disk_not_found: 'SD 디스크를 찾지 못했습니다.',
+      sd_no_media: 'SD 카드가 연결되지 않았습니다.',
+      disk_reinit_failed: 'SD 카드 인터페이스를 다시 초기화하지 못했습니다.',
+      disk_bind_failed: 'SD 디스크 핸들을 연결하지 못했습니다.',
+      vendor_mode_enter_failed: 'AIO 전용 모드 진입에 실패했습니다.',
+      not_aio_product: 'AIO 제품 정보를 지원하지 않는 카드입니다.',
+      product_info_read_failed: 'AIO 제품 정보를 읽지 못했습니다.',
+      card_status_read_failed: '카드 상태 정보를 읽지 못했습니다.',
+      card_csd_read_failed: '카드 용량 정보를 읽지 못했습니다.',
+    };
+
+    function setButtonsDisabled(disabled) {
+        commandButtons.forEach(btn => btn.disabled = disabled);
+    }
+
+    function resetAIOInfoUI(message = defaultAIOPlaceholderText) {
+      aioInfoTable.style.display = 'none';
+      aioInfoTableBody.innerHTML = '';
+      aioInfoPlaceholder.textContent = message;
+      aioInfoPlaceholder.style.display = 'block';
+    }
+
+    function resetDeviceInfoUI(message = defaultDevicePlaceholderText) {
+      deviceInfoTable.style.display = 'none';
+      deviceInfoTableBody.innerHTML = '';
+      deviceInfoPlaceholder.textContent = message;
+      deviceInfoPlaceholder.style.display = 'block';
+    }
+
+    function hideSDRemovedModal() {
+      sdRemovedModal.hidden = true;
+    }
+
+    function showSDRemovedModal() {
+      sdRemovedModal.hidden = false;
+    }
+
+    function stopSDStatePolling() {
+      if (sdStatePollTimer !== null) {
+        clearInterval(sdStatePollTimer);
+        sdStatePollTimer = null;
+      }
+      sdStateQueryInFlight = false;
+    }
+
+    function resetSDStateTracking() {
+      stopSDStatePolling();
+      aioQueryInFlight = false;
+      aioQueryOrigin = null;
+      pendingAutoAIOQuery = false;
+      manualRefreshPending = false;
+      lastKnownCardPresent = null;
+    }
+
+    function updateConnectionStatusUI(isConnected, message = "") {
+      statusDisplay.classList.remove('status-connected', 'status-disconnected', 'status-error');
+      if (isConnected) {
+        statusDisplay.textContent = message || 'AIO SD READER 장치 연결됨';
+        statusDisplay.classList.add('status-connected');
+        connectButton.style.display = 'none';
+        disconnectButton.style.display = '';
+        setButtonsDisabled(false);
+      } else {
+        hideSDRemovedModal();
+        resetSDStateTracking();
+        statusDisplay.textContent = message || 'AIO SD READER 연결 안됨';
+        statusDisplay.classList.add('status-disconnected');
+        connectButton.style.display = '';
+        disconnectButton.style.display = 'none';
+        setButtonsDisabled(true);
+        resetAIOInfoUI();
+        resetDeviceInfoUI();
+        port = null;
+      }
+    }
+
+    function displayDeviceInfo(infoObject) {
+        deviceInfoTableBody.innerHTML = '';
+        if (Object.keys(infoObject).length > 0) {
+            for (const key in infoObject) {
+                if (Object.hasOwnProperty.call(infoObject, key)) {
+                    const value = infoObject[key];
+                    const row = deviceInfoTableBody.insertRow();
+                    const cellKey = row.insertCell();
+                    const cellValue = row.insertCell();
+                    cellKey.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    cellValue.textContent = value;
+                }
+            }
+            deviceInfoTable.style.display = '';
+            deviceInfoPlaceholder.style.display = 'none';
+        } else {
+            deviceInfoTable.style.display = 'none';
+            deviceInfoPlaceholder.textContent = '수신된 장치 정보가 없습니다.';
+            deviceInfoPlaceholder.style.display = 'block';
+        }
+    }
+
+    function displayAIOInfo(infoObject) {
+        aioInfoTableBody.innerHTML = '';
+        if (Object.keys(infoObject).length > 0) {
+            for (const key in infoObject) {
+                if (Object.hasOwnProperty.call(infoObject, key)) {
+                    const value = infoObject[key];
+                    const row = aioInfoTableBody.insertRow();
+                    const cellKey = row.insertCell();
+                    const cellValue = row.insertCell();
+                    cellKey.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    cellValue.textContent = value;
+                }
+            }
+            aioInfoTable.style.display = '';
+            aioInfoPlaceholder.style.display = 'none';
+        } else {
+            aioInfoTable.style.display = 'none';
+            aioInfoPlaceholder.textContent = '수신된 장치 정보가 없습니다.';
+            aioInfoPlaceholder.style.display = 'block';
+        }
+    }
+
+    function getErrorText(responseObject) {
+      if (responseObject && typeof responseObject.error_name === 'string' &&
+          Object.hasOwnProperty.call(errorMessagesByName, responseObject.error_name)) {
+        return errorMessagesByName[responseObject.error_name];
+      }
+
+      return (responseObject && responseObject.message) ? responseObject.message : '알 수 없는 오류';
+    }
+
+    async function sendCommand(commandObject, options = {}) {
+        const silentDisconnectAlert = Boolean(options.silentDisconnectAlert);
+
+        if (!port || !port.device_.opened) {
+            if (!silentDisconnectAlert) {
+              alert("장치가 연결되지 않았습니다.");
+            }
+            updateConnectionStatusUI(false, "명령어 전송 시도 중 연결 끊김 감지.");
+            return false;
+        }
+        const jsonString = JSON.stringify(commandObject);
+        console.log(`명령어 전송 (길이 ${jsonString.length}): ${jsonString}`);
+
+        const success = await port.send(jsonString);
+        if (!success) {
+            statusDisplay.textContent = "명령어 전송 실패. 연결을 확인하세요.";
+            statusDisplay.classList.remove('status-connected');
+            statusDisplay.classList.add('status-error');
+        }
+        return success;
+    }
+
+    async function requestAIOQuery(origin) {
+      if (aioQueryInFlight) {
+        return false;
+      }
+
+      aioQueryInFlight = true;
+      aioQueryOrigin = origin;
+
+      if (origin === 'auto') {
+        resetAIOInfoUI('SD 카드 정보를 확인하는 중입니다.');
+      }
+
+      const success = await sendCommand({ command: "query_aio" }, {
+        silentDisconnectAlert: origin === 'auto',
+      });
+
+      if (!success) {
+        aioQueryInFlight = false;
+        aioQueryOrigin = null;
+      }
+
+      return success;
+    }
+
+    async function querySDState(options = {}) {
+      const silentDisconnectAlert = Boolean(options.silentDisconnectAlert);
+
+      if (!port || !port.device_ || !port.device_.opened || sdStateQueryInFlight) {
+        return false;
+      }
+
+      sdStateQueryInFlight = true;
+      const success = await sendCommand({ command: "query_sd_state" }, {
+        silentDisconnectAlert,
+      });
+
+      if (!success) {
+        sdStateQueryInFlight = false;
+      }
+
+      return success;
+    }
+
+    async function pollSDState() {
+      return querySDState({ silentDisconnectAlert: true });
+    }
+
+    async function requestManualRefresh() {
+      hideSDRemovedModal();
+
+      if (lastKnownCardPresent) {
+        manualRefreshPending = false;
+        return requestAIOQuery('manual');
+      }
+
+      manualRefreshPending = true;
+      resetAIOInfoUI('SD 카드 상태를 확인하는 중입니다.');
+
+      const success = await querySDState({ silentDisconnectAlert: false });
+      if (!success) {
+        manualRefreshPending = false;
+      }
+
+      return success;
+    }
+
+    function startSDStatePolling() {
+      stopSDStatePolling();
+      pollSDState();
+      sdStatePollTimer = setInterval(pollSDState, 1000);
+    }
+
+    function handleSDState(sdState) {
+      const cardPresent = Boolean(sdState.card_present);
+      const previousCardPresent = lastKnownCardPresent;
+
+      lastKnownCardPresent = cardPresent;
+
+      if (!cardPresent) {
+        pendingAutoAIOQuery = false;
+        manualRefreshPending = false;
+        aioQueryInFlight = false;
+        aioQueryOrigin = null;
+        resetAIOInfoUI(previousCardPresent === true ? defaultAIOPlaceholderText : 'SD 카드가 연결되지 않았습니다.');
+
+        if (previousCardPresent === true) {
+          showSDRemovedModal();
+        }
+        return;
+      }
+
+      if (manualRefreshPending) {
+        manualRefreshPending = false;
+        if (!aioQueryInFlight) {
+          requestAIOQuery('manual');
+        }
+        return;
+      }
+
+      if (previousCardPresent === null || previousCardPresent === false) {
+        pendingAutoAIOQuery = true;
+      }
+
+      if (pendingAutoAIOQuery && !aioQueryInFlight) {
+        requestAIOQuery('auto');
+      }
+    }
+
+    connectButton.addEventListener('click', async () => {
+      if (!navigator.usb) {
+        alert("WebUSB가 이 브라우저에서 지원되지 않습니다.");
+        return;
+      }
+      try {
+        port = await serial.requestPort();
+
+        port.onConnect = () => {
+          console.log("포트 연결됨.");
+          updateConnectionStatusUI(true);
+          hideSDRemovedModal();
+          resetAIOInfoUI();
+          resetDeviceInfoUI();
+          resetSDStateTracking();
+          startSDStatePolling();
+        };
+        port.onDisconnect = () => {
+          console.log("포트 연결이 명시적으로 해제됨.");
+          updateConnectionStatusUI(false, "장치 연결이 해제되었습니다.");
+        };
+        port.onUnexpectedDisconnect = (errorMessage) => {
+            console.warn("포트 연결이 예기치 않게 끊김:", errorMessage);
+            updateConnectionStatusUI(false, `장치 연결 끊김: ${errorMessage || "알 수 없는 원인"}`);
+        };
+        port.onReceive = (data) => {
+          console.log("수신된 전체 메시지 (문자열):", data);
+          try {
+            const receivedObject = JSON.parse(data.trim());
+            console.log("수신된 JSON 객체:", receivedObject);
+
+            if (receivedObject.command === "query_device" && receivedObject.status === "okay" && receivedObject.message) {
+                displayDeviceInfo(receivedObject.message);
+            } else if (receivedObject.command === "query_sd_state" && receivedObject.status === "okay" && receivedObject.message) {
+                sdStateQueryInFlight = false;
+                handleSDState(receivedObject.message);
+            } else if (receivedObject.command === "query_aio" && receivedObject.status === "okay" && receivedObject.message) {
+                aioQueryInFlight = false;
+                aioQueryOrigin = null;
+                if (!lastKnownCardPresent) {
+                    pendingAutoAIOQuery = false;
+                    resetAIOInfoUI();
+                    return;
+                }
+                pendingAutoAIOQuery = false;
+                displayAIOInfo(receivedObject.message);
+            } else if (receivedObject.command === "query_device" && receivedObject.status === "fail") {
+                const errorText = getErrorText(receivedObject);
+                deviceInfoTable.style.display = 'none';
+                deviceInfoPlaceholder.textContent = `장치 정보 가져오기 실패: ${errorText}`;
+                deviceInfoPlaceholder.style.display = 'block';
+            } else if (receivedObject.command === "query_sd_state" && receivedObject.status === "fail") {
+                const wasManualRefreshPending = manualRefreshPending;
+                const errorText = getErrorText(receivedObject);
+
+                sdStateQueryInFlight = false;
+                manualRefreshPending = false;
+                console.warn("SD 상태 확인 실패:", receivedObject.error_name || receivedObject.error_code || "unknown", errorText);
+                if (wasManualRefreshPending) {
+                    resetAIOInfoUI(`장치 정보 가져오기 실패: ${errorText}`);
+                }
+            } else if (receivedObject.command === "query_aio" && receivedObject.status === "fail") {
+                const failedOrigin = aioQueryOrigin;
+                const errorText = getErrorText(receivedObject);
+
+                aioQueryInFlight = false;
+                aioQueryOrigin = null;
+
+                if (!lastKnownCardPresent) {
+                    pendingAutoAIOQuery = false;
+                    resetAIOInfoUI();
+                } else if (failedOrigin === 'auto') {
+                    if (lastKnownCardPresent) {
+                        pendingAutoAIOQuery = true;
+                        resetAIOInfoUI('SD 카드 정보를 확인하는 중입니다.');
+                    } else {
+                        pendingAutoAIOQuery = false;
+                        resetAIOInfoUI();
+                    }
+                } else {
+                    aioInfoTable.style.display = 'none';
+                    aioInfoPlaceholder.textContent = `장치 정보 가져오기 실패: ${errorText}`;
+                    aioInfoPlaceholder.style.display = 'block';
+                }
+            }
+          } catch (e) {
+            console.error("수신된 JSON 파싱 오류:", e, "데이터:", data);
+          }
+        };
+        port.onError = (error) => {
+          console.error("포트 오류:", error);
+          statusDisplay.textContent = "오류: " + error;
+          statusDisplay.classList.remove('status-connected', 'status-disconnected');
+          statusDisplay.classList.add('status-error');
+          if (port && !port.device_.opened && typeof port.onUnexpectedDisconnect === 'function') {
+             port.onUnexpectedDisconnect("onError, device closed: " + error.message);
+          }
+        };
+
+        await port.connect();
+      } catch (error) {
+        console.log("포트 선택 안됨 또는 연결 중 오류:", error.message);
+        if (error.name !== "NotFoundError") {
+            updateConnectionStatusUI(false, "포트 연결 오류: " + error.message);
+        } else {
+            updateConnectionStatusUI(false, "장치 선택이 취소되었습니다.");
+        }
+      }
+    });
+
+    disconnectButton.addEventListener('click', async () => {
+      if (port) {
+        await port.disconnect();
+      }
+    });
+
+    cmdQueryDeviceButton.addEventListener('click', () => sendCommand({ command: "query_device" }));
+    cmdQueryAIOButton.addEventListener('click', () => requestManualRefresh());
+    sdRemovedModalCloseButton.addEventListener('click', hideSDRemovedModal);
+    sdRemovedModal.addEventListener('click', (event) => {
+      if (event.target === sdRemovedModal) {
+        hideSDRemovedModal();
+      }
+    });
+
+    updateConnectionStatusUI(false);
+
+  </script>
+</body>
+</html>

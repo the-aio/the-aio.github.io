@@ -1,0 +1,27 @@
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Regex to match variations of the brand name (the aio, the-aio, The-AIO, AIO)
+  const brandRegex = /\b((?:the[-\s]?)?aio)\b/gi;
+
+  function walk(node) {
+    if (node.nodeType === 3) { // Text node
+      const text = node.nodeValue;
+      if (brandRegex.test(text)) {
+        const span = document.createElement('span');
+        // Standardize all matches to: "the <span style='color: #e11d48 !important; font-weight: bold;'>a</span>io"
+        // This ensures the red 'a' is forced via inline styles, bypassing CSS utility limits.
+        span.innerHTML = text.replace(brandRegex, function(match) {
+          return '"the <span style="color: #e11d48 !important; font-weight: bold;">a</span>io"';
+        });
+        node.parentNode.replaceChild(span, node);
+      }
+    } else if (node.nodeType === 1 && node.childNodes && !/(script|style|textarea|input|button)/i.test(node.tagName)) {
+      for (let i = 0; i < node.childNodes.length; i++) {
+        walk(node.childNodes[i]);
+      }
+    }
+  }
+
+  walk(document.body);
+});
+</script>
