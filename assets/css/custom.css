@@ -21,6 +21,21 @@
   --color-primary-600: 225, 29, 72; /* matches logo red #e11d48 */
 }
 
+/* Contact page: robust spacing and padding */
+.contact-page .contact-hero-card,
+.contact-page .contact-info-card,
+.contact-page .contact-form-card {
+  padding: 2rem !important;
+}
+
+@media (min-width: 768px) {
+  .contact-page .contact-hero-card,
+  .contact-page .contact-info-card,
+  .contact-page .contact-form-card {
+    padding: 2.5rem !important;
+  }
+}
+
 /* Stable CTA styling for Support > SD Reader card */
 .sd-reader-cta,
 .sd-reader-cta:visited {
@@ -55,4 +70,19 @@
   color: #111827 !important;
   border-color: #9ca3af !important;
   border-radius: 0.75rem !important;
+}
+
+/* Contact page submit button: enforce readable contrast in all themes */
+.contact-submit-btn {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #dc2626 !important;
+}
+
+.contact-submit-btn:hover,
+.contact-submit-btn:focus,
+.contact-submit-btn:active {
+  background-color: #b91c1c !important;
+  color: #ffffff !important;
+  border-color: #b91c1c !important;
 }

@@ -12,7 +12,7 @@ unsafe = true
   autoSwitchAppearance = true
   Logo = "logo.png"
   disableTextInHeader = true
-  
+
 [params.header]
   layout = "basic"
 
